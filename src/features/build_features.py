@@ -1,33 +1,27 @@
-"""
-Feature engineering and transformation
-"""
-
+# src/features/build_features.py
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from src.utils.physics import calculate_physics_baseline
+from src import config
 
-
-def create_features(df):
-    """Create new features from existing ones."""
-    # Example feature engineering
-    # df['new_feature'] = df['feature1'] * df['feature2']
+def feature_engineering(df: pd.DataFrame, MCR) -> pd.DataFrame:
+    load_pct = df["load"].values
+    df["power"] = (load_pct / 100) * MCR  # Convert load % to power
     return df
 
-
-def encode_categorical(df, columns):
-    """Encode categorical variables."""
-    le = LabelEncoder()
-    for col in columns:
-        df[col] = le.fit_transform(df[col])
-    return df
-
-
-def scale_features(df, columns):
-    """Scale numerical features."""
-    scaler = StandardScaler()
-    df[columns] = scaler.fit_transform(df[columns])
-    return df
-
-
-if __name__ == '__main__':
-    print("Building features...")
+def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Create feature matrix X and target vector y."""
+    X = pd.DataFrame()
+    
+    # Raw features mapped from config
+    speed = df[config.COL_SPEED]
+    
+    X["speed"] = speed
+    X["speed_sq"] = speed ** 2
+    X["speed_cu"] = speed ** 3
+    X["draft"] = df[config.COL_DRAFT]
+    X["laden_ballast"] = df[config.COL_LADEN]
+    
+    # Physics Baseline Feature
+    X["phys_base"] = calculate_physics_baseline(speed.values, draft=df[config.COL_DRAFT].values)
+    
+    return X

@@ -23,6 +23,7 @@ ipykernel>=6.0.0
 
 # Data validation
 pandas-profiling>=3.0.0
+pyodbc>=4.0.0
 
 # Experiment tracking
 mlflow>=1.20.0
